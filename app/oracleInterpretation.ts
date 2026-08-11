@@ -41,6 +41,10 @@ export type LocalOracleReading = {
   threads: { position: string; title: string; orientation: CardOrientation; text: string; myth: string }[];
   combinations: { type: string; title: string; text: string }[];
   synthesis: string;
+  causalChain: string;
+  commonTheme: string;
+  priorities: string[];
+  actions: string[];
   greekBridge: string;
   advice: string;
 };
@@ -106,21 +110,81 @@ function findCombinations(cards: OracleCardContext[]) {
   return combinationRules.filter((rule) => rule.cards.every((id) => ids.has(id)));
 }
 
-function buildSynthesis(spread: SpreadKey, threads: LocalOracleReading["threads"], combinations: CombinationRule[]) {
+function cardSignal(card: TarotDatabaseCard, orientation: CardOrientation) {
+  const [primary, secondary = primary] = card.keywords;
+  return orientation === "upright"
+    ? `「${primary}」是可直接运用的资源，并需以「${secondary}」落实`
+    : `「${primary}」目前表现为阻塞、缺失或过量，需先校正「${secondary}」`;
+}
+
+function describeCard(context: OracleCardContext) {
+  const data = databaseById.get(context.card.id);
+  if (!data) throw new Error(`塔罗数据库缺少牌：${context.card.id}`);
+  return `${data.name_cn}${context.orientation === "upright" ? "正位" : "逆位"}所指的${cardSignal(data, context.orientation)}`;
+}
+
+function buildCausalChain(spread: SpreadKey, cards: OracleCardContext[]) {
   if (spread === "single") {
-    return `这张牌把问题集中在“${threads[0]?.position ?? "当前状态"}”：${threads[0]?.text ?? "请重新抽牌。"}`;
+    return `当前问题集中在${describeCard(cards[0])}。先辨认这一状态在现实中的具体表现，再决定是运用资源还是处理阻塞。`;
   }
   if (spread === "three") {
-    const connectors = spreadRules.three.synthesis.connectors ?? ["过去形成了", "因此现在", "若保持当前路径，未来更可能"];
-    return threads.map((thread, index) => `${connectors[index]}：${thread.text}`).join(" ") + (combinations.length ? ` 组合规则进一步指出：${combinations.map((item) => item.text).join(" ")}` : "");
+    return `过去，${describeCard(cards[0])}，形成了当前局面的基础；现在，${describeCard(cards[1])}，显示旧影响正在怎样进入选择；若不改变现有做法，${describeCard(cards[2])}会成为下一阶段较可能出现的趋势。未来牌描述的是条件性方向，不是确定结果。`;
   }
-  const groups = spreadRules.celtic.synthesis.groups ?? [];
-  const grouped = groups.map((_, index) => {
-    const left = threads[index * 2];
-    const right = threads[index * 2 + 1];
-    return left && right ? `${left.position}与${right.position}共同显示：${left.text} 同时，${right.text}` : "";
-  }).filter(Boolean);
-  return `${spreadRules.celtic.synthesis.opening}。${grouped.join(" ")}${combinations.length ? ` 已命中的组合关系：${combinations.map((item) => item.text).join(" ")}` : ""}`;
+  return `当前状态由${describeCard(cards[0])}呈现，并受到${describeCard(cards[1])}的直接牵制；其深层来源连接${describeCard(cards[2])}与${describeCard(cards[3])}。潜在可能和近期发展分别由${describeCard(cards[4])}、${describeCard(cards[5])}给出；随后，自我态度与外部环境的互动决定希望与恐惧会否把局面推向${describeCard(cards[9])}所示的条件性结果。`;
+}
+
+function buildCommonTheme(cards: OracleCardContext[], combinations: CombinationRule[]) {
+  const data = cards.map(({ card }) => databaseById.get(card.id)).filter((card): card is TarotDatabaseCard => Boolean(card));
+  const reversed = cards.filter(({ orientation }) => orientation === "reversed").length;
+  const major = data.filter((card) => card.arcana_type === "major").length;
+  const keywordCounts = new Map<string, number>();
+  data.flatMap((card) => card.keywords).forEach((keyword) => keywordCounts.set(keyword, (keywordCounts.get(keyword) ?? 0) + 1));
+  const shared = [...keywordCounts.entries()].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1]).map(([keyword]) => keyword).slice(0, 3);
+  const orientationTheme = reversed > cards.length / 2
+    ? "多数牌为逆位，当前重点是清理阻塞、过量与缺失，而非强行推进。"
+    : reversed === cards.length / 2
+      ? "正逆位力量接近，外在推进必须与内在调整同步。"
+      : "多数牌为正位，可用资源较多，但仍需通过现实反馈验证。";
+  const majorTheme = major >= Math.ceil(cards.length / 2) ? "大阿尔卡那占比较高，问题涉及长期模式或重要阶段选择。" : "小阿尔卡那占比较高，改变更依赖日常行为、沟通和资源安排。";
+  const sharedTheme = shared.length ? `重复出现的关键词是${shared.map((item) => `「${item}」`).join("、")}，这是各位置共同指向的主题。` : `各牌没有重复关键词，重点在于协调${data.slice(0, 3).map((card) => `「${card.keywords[0]}」`).join("、")}之间的关系。`;
+  const combinationTheme = combinations.length ? `已命中的牌组关系为${combinations.map((item) => `「${item.title}」`).join("、")}。` : "本次没有命中预设的特殊牌组关系，按位置链条判断即可。";
+  return `${orientationTheme}${majorTheme}${sharedTheme}${combinationTheme}`;
+}
+
+const categoryActions: Record<QuestionCategory, [string, string]> = {
+  love: ["写下自己的需要、边界与可接受的回应，各保留一条", "进行一次只讨论事实和下一步的沟通，不用猜测替代对方的明确回应"],
+  career: ["把目标缩成一个七天内可验收的成果，并写明完成标准", "确认当前最缺的一项资源、能力或授权，只补这一项后再推进"],
+  wealth: ["核对现金流、固定支出、合同与风险暴露，不把期待收益计入可用金额", "设定一项金额明确的调整，并在七天后复查实际结果"],
+  relationship: ["列出自己、他人和共同责任，删除无法由自己控制的任务", "安排一次角色与边界确认，并记录双方同意的下一步"],
+  self: ["连续三天记录事实、感受、需要和行动，区分观察与推测", "选择一个十分钟内可以开始的小行动，用完成记录代替自我评价"],
+  general: ["写下当前事实、自己的需要和能够控制的下一步", "选择一个七天内可完成且结果可观察的行动，再按反馈调整"],
+};
+
+function buildPriorities(spread: SpreadKey, cards: OracleCardContext[]) {
+  const indices = spread === "single" ? [0] : spread === "three" ? [1, 0, 2] : [1, 2, 0, 6, 7, 5, 9];
+  const labels = spread === "single"
+    ? ["先处理核心"]
+    : spread === "three"
+      ? ["第一优先：处理当下", "第二优先：整合过去", "第三优先：校准趋势"]
+      : ["第一优先：解除主要阻碍", "第二优先：处理深层原因", "第三优先：稳定当前状态", "第四优先：调整自身态度", "第五优先：核对外部条件", "第六优先：观察近期发展", "最后：再评估结果"];
+  return indices.map((cardIndex, index) => `${labels[index]}——${describeCard(cards[cardIndex])}。`);
+}
+
+function buildActions(spread: SpreadKey, category: QuestionCategory, cards: OracleCardContext[]) {
+  const [firstAction, secondAction] = categoryActions[category];
+  const focusIndex = spread === "single" ? 0 : spread === "three" ? 1 : 1;
+  const focus = databaseById.get(cards[focusIndex].card.id);
+  const resultIndex = spread === "celtic" ? 9 : cards.length - 1;
+  const result = databaseById.get(cards[resultIndex].card.id);
+  return [
+    `今天：围绕${focus?.name_cn ?? "核心牌"}的「${focus?.keywords[0] ?? "核心主题"}」，${firstAction}。`,
+    `七天内：${secondAction}。`,
+    `复查条件：观察行动后「${result?.keywords[0] ?? "结果"}」是否更清楚、更稳定；若没有，先调整方法或补足条件，不把趋势当作定论。`,
+  ];
+}
+
+function buildSynthesis(causalChain: string, commonTheme: string) {
+  return `${causalChain} ${commonTheme}`;
 }
 
 export function createLocalOracleReading(question: string, spread: SpreadKey, cards: OracleCardContext[]): LocalOracleReading {
@@ -141,6 +205,10 @@ export function createLocalOracleReading(question: string, spread: SpreadKey, ca
   });
   const combinations = findCombinations(cards);
   const first = cards[0] ? databaseById.get(cards[0].card.id) : undefined;
+  const causalChain = buildCausalChain(spread, cards);
+  const commonTheme = buildCommonTheme(cards, combinations);
+  const priorities = buildPriorities(spread, cards);
+  const actions = buildActions(spread, category, cards);
   return {
     category,
     theme: categoryRules[category].label,
@@ -148,9 +216,13 @@ export function createLocalOracleReading(question: string, spread: SpreadKey, ca
     coreMeaning: first?.rws_core_meaning ?? "",
     threads,
     combinations,
-    synthesis: buildSynthesis(spread, threads, combinations),
+    synthesis: buildSynthesis(causalChain, commonTheme),
+    causalChain,
+    commonTheme,
+    priorities,
+    actions,
     greekBridge: threads.map((thread) => `${thread.position}：${thread.myth}`).join(" "),
-    advice: cards.map(({ card }) => databaseById.get(card.id)?.advice).filter((value, index, all) => value && all.indexOf(value) === index).slice(0, spread === "celtic" ? 3 : 2).join(" "),
+    advice: actions.join(" "),
   };
 }
 

@@ -246,6 +246,10 @@ textarea::placeholder { color: #969087; }
 .oracle-synthesis { margin-top:18px; padding:20px 22px; background:#1d1b18; color:#f5ecdf; }
 .oracle-synthesis small { display:block; margin-bottom:10px; color:#d6a83d; font-size:9px; letter-spacing:.16em; }
 .oracle-synthesis p { margin:0; font-family:Georgia,"Songti SC",serif; font-size:14px; line-height:1.9; }
+.oracle-synthesis ol { margin:0; padding-left:1.35rem; font-family:Georgia,"Songti SC",serif; font-size:14px; line-height:1.85; }
+.oracle-synthesis li + li { margin-top:8px; }
+.oracle-priorities { background:#25211b; }
+.oracle-actions { background:#17231f; }
 .oracle-combinations { margin-top:18px; padding:18px 22px; border:1px solid rgba(207,63,70,.28); background:#fffaf1; }
 .oracle-combinations small { display:block; margin-bottom:8px; color:var(--red); font-size:9px; letter-spacing:.16em; }
 .oracle-combinations p { margin:7px 0; font-family:Georgia,"Songti SC",serif; font-size:13px; line-height:1.75; }

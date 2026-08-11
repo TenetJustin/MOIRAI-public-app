@@ -44,6 +44,13 @@ test("application contains no external oracle implementation", async () => {
   const source = await readFile(new URL("../app/oracleInterpretation.ts", import.meta.url), "utf8");
   assert.doesNotMatch(source, /fetch\s*\(/);
   assert.doesNotMatch(source, /apiKey|chat\/completions|OpenAI|DeepSeek|Ollama|LM Studio/i);
+  assert.match(source, /function buildCausalChain/);
+  assert.match(source, /function buildCommonTheme/);
+  assert.match(source, /function buildPriorities/);
+  assert.match(source, /function buildActions/);
+  assert.match(source, /过去.*形成了当前局面的基础.*现在.*旧影响正在怎样进入选择/s);
+  assert.match(source, /当前状态由.*直接牵制.*深层来源.*自我态度与外部环境/s);
+  assert.match(source, /今天：.*七天内：.*复查条件：/s);
 });
 
 test("every new ritual entry resets prior ritual state", async () => {
