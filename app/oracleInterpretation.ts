@@ -177,9 +177,9 @@ function buildActions(spread: SpreadKey, category: QuestionCategory, cards: Orac
   const resultIndex = spread === "celtic" ? 9 : cards.length - 1;
   const result = databaseById.get(cards[resultIndex].card.id);
   return [
-    `今天：围绕${focus?.name_cn ?? "核心牌"}的「${focus?.keywords[0] ?? "核心主题"}」，${firstAction}。`,
-    `七天内：${secondAction}。`,
-    `复查条件：观察行动后「${result?.keywords[0] ?? "结果"}」是否更清楚、更稳定；若没有，先调整方法或补足条件，不把趋势当作定论。`,
+    `直接行动：围绕${focus?.name_cn ?? "核心牌"}的「${focus?.keywords[0] ?? "核心主题"}」，${firstAction}。`,
+    `后续行动：${secondAction}。`,
+    `调整原则：以「${result?.keywords[0] ?? "结果"}」是否更清楚、更稳定作为反馈；若没有改善，先调整方法或补足条件，不把趋势当作定论。`,
   ];
 }
 
