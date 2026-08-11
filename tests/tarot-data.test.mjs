@@ -45,3 +45,11 @@ test("application contains no external oracle implementation", async () => {
   assert.doesNotMatch(source, /fetch\s*\(/);
   assert.doesNotMatch(source, /apiKey|chat\/completions|OpenAI|DeepSeek|Ollama|LM Studio/i);
 });
+
+test("every new ritual entry resets prior ritual state", async () => {
+  const source = await readFile(new URL("../app/TarotRitual.tsx", import.meta.url), "utf8");
+  assert.match(source, /const startNewRitual = \(\) => \{ resetRitualState\(\); go\("intention"\); \}/);
+  assert.match(source, /setQuestion\(""\); setSpread\("single"\); setPurified\(false\); setShuffleCount\(0\)/);
+  assert.match(source, /setRemaining\(\[\]\); setDrawn\(\[\]\); setCutPile\(null\); setSaved\(false\)/);
+  assert.doesNotMatch(source, /onClick=\{\(\) => go\("intention"\)\}/);
+});

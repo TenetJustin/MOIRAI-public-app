@@ -329,10 +329,12 @@ export default function TarotRitual() {
   };
 
   const go = (next: Step) => { setSelectedStoryIndex(null); setStep(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const resetRitual = () => {
+  const resetRitualState = () => {
     setQuestion(""); setSpread("single"); setPurified(false); setShuffleCount(0); setDeck(shuffleDeckSecure(tarotDeck));
-    setRemaining([]); setDrawn([]); setCutPile(null); setSaved(false); go("landing");
+    setRemaining([]); setDrawn([]); setCutPile(null); setSaved(false);
   };
+  const startNewRitual = () => { resetRitualState(); go("intention"); };
+  const returnToTemple = () => { resetRitualState(); go("landing"); };
   const shuffle = () => { setDeck(shuffleDeckSecure(deck)); setShuffleCount((v) => v + 1); chime(); };
   const chooseCut = (pile: number) => {
     const size = Math.floor(deck.length / 3);
@@ -369,7 +371,7 @@ export default function TarotRitual() {
     <ThreeTable active={["shuffle", "cut", "draw"].includes(step)} />
     <div className="paper-grain" />
     <header className="site-header">
-      <button className="brand" onClick={() => go("landing")} type="button"><span>✦</span><div><b>MOIRAI</b><small>ORACLE OF OLYMPUS · 奥林匹斯神谕</small></div></button>
+      <button className="brand" onClick={returnToTemple} type="button"><span>✦</span><div><b>MOIRAI</b><small>ORACLE OF OLYMPUS · 奥林匹斯神谕</small></div></button>
       <div className="header-actions">
         <button onClick={toggleAudio} className={audioEnabled ? "active" : ""} type="button" aria-label="切换环境音">{audioEnabled ? "声场开启" : "开启声场"}</button>
         <button onClick={() => go("library")} type="button">神话图鉴</button>
@@ -393,7 +395,7 @@ export default function TarotRitual() {
           <div className="moirai-actions">
             <p>在纺线、丈量与剪断之间，向神谕留下你的问题</p>
             <div>
-              <button className="moirai-primary" onClick={() => go("intention")} type="button">开始仪式 <span>→</span></button>
+              <button className="moirai-primary" onClick={startNewRitual} type="button">开始仪式 <span>→</span></button>
               <button className="moirai-secondary" onClick={() => go("archive")} type="button">打开命运档案 <span>{records.length}</span></button>
               <button className="moirai-story" onClick={() => go("library")} type="button">查看 78 张塔罗牌的希腊故事 <span>↗</span></button>
             </div>
@@ -402,7 +404,7 @@ export default function TarotRitual() {
         </motion.div>
       </motion.section>}
 
-      {step === "intention" && <StepShell key="intention" eyebrow="STEP 01 · SET AN INTENTION" title="把问题留在祭坛上" onBack={() => go("landing")}>
+      {step === "intention" && <StepShell key="intention" eyebrow="STEP 01 · SET AN INTENTION" title="把问题留在祭坛上" onBack={returnToTemple}>
         <p className="panel-intro">它不会被发送到任何地方。尽量询问你想理解的状态，而不是要求一个确定预言。</p>
         <textarea value={question} onChange={(event) => setQuestion(event.target.value)} maxLength={180} placeholder="例如：我此刻最需要看见的内在动力是什么？" autoFocus />
         <div className="input-meta"><span>仅保存在这台电脑</span><span>{question.length} / 180</span></div>
@@ -452,11 +454,11 @@ export default function TarotRitual() {
           <blockquote>{localOracleReading.advice}</blockquote>
           <p className="oracle-connection-note">本次解读完全由设备内的 78 张牌数据库、牌阵位置规则和预先批准的组合文本生成；不连接 AI 或第三方接口。</p>
         </section>
-        <div className="reading-actions"><button className="primary" onClick={saveReading} disabled={saved} type="button">{saved ? "已保存到命运档案" : "保存本次记录"}</button><button className="secondary" onClick={resetRitual} type="button">开始新的仪式</button></div>
+        <div className="reading-actions"><button className="primary" onClick={saveReading} disabled={saved} type="button">{saved ? "已保存到命运档案" : "保存本次记录"}</button><button className="secondary" onClick={startNewRitual} type="button">开始新的仪式</button></div>
       </motion.section>}
 
       {step === "archive" && <motion.section key="archive" className="archive-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <button className="back-link" onClick={() => go("landing")} type="button">← 返回神殿</button><p className="eyebrow">LOCAL ORACLE ARCHIVE</p><h2>我的命运档案</h2><p className="panel-intro">所有记录只存在这个浏览器中。清除浏览器数据会同时清除档案。</p>
+        <button className="back-link" onClick={returnToTemple} type="button">← 返回神殿</button><p className="eyebrow">LOCAL ORACLE ARCHIVE</p><h2>我的命运档案</h2><p className="panel-intro">所有记录只存在这个浏览器中。清除浏览器数据会同时清除档案。</p>
         <div className="local-data-tools" aria-label="本地数据管理">
           <div><strong>本地数据管理</strong><span>导出包含档案、收藏与设置的备份；导入只接受 MOIRAI 备份格式。</span></div>
           <div className="local-data-actions">
@@ -466,14 +468,14 @@ export default function TarotRitual() {
           </div>
         </div>
         {archiveMessage && <p className="archive-message" role="status">{archiveMessage}</p>}
-        {records.length === 0 ? <div className="empty-archive"><span>◎</span><h3>档案仍是空白</h3><p>完成一次仪式并保存，神谕会在这里留下日期与牌阵。</p><button className="primary" onClick={() => go("intention")} type="button">开始第一次仪式</button></div> : <>
+        {records.length === 0 ? <div className="empty-archive"><span>◎</span><h3>档案仍是空白</h3><p>完成一次仪式并保存，神谕会在这里留下日期与牌阵。</p><button className="primary" onClick={startNewRitual} type="button">开始第一次仪式</button></div> : <>
           <div className="archive-toolbar"><span>{records.length} 次本地记录</span><small>仅存于当前设备</small></div>
           <div className="archive-list">{records.map((record) => <article key={record.id}><div className="archive-date"><b>{new Date(record.createdAt).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}</b><span>{spreads[record.spread].name}</span></div><h3>{record.question}</h3><div className="archive-card-row">{archiveCards(record).map(({ card, position, orientation = "upright" }) => <div key={card.id}><span>{card.sigil}</span><p><small>{position} · {orientation === "upright" ? "正位" : "逆位"}</small><b>{card.nameZh}</b><em>{card.myth}</em></p></div>)}</div><button className="delete-record" onClick={() => persist(records.filter((item) => item.id !== record.id))} type="button">删除这条记录</button></article>)}</div>
         </>}
       </motion.section>}
 
       {step === "library" && <motion.section key="library" className="library-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <button className="back-link library-home-button" onClick={() => go("landing")} type="button">← 返回神殿</button>
+        <button className="back-link library-home-button" onClick={returnToTemple} type="button">← 返回神殿</button>
         <div className="library-heading"><div><p className="eyebrow">THE MYTHIC ARCHIVE · 78 CARDS</p><h2>希腊神话塔罗图鉴</h2></div><p>每张塔罗牌都是一则神话的镜面。选择牌面，阅读人物、事件、象征与传统牌义如何交叠。</p></div>
         <div className="library-filters" aria-label="按花色筛选">{libraryFilters.map((filter) => <button key={filter.key} className={librarySuit === filter.key ? "active" : ""} onClick={() => setLibrarySuit(filter.key)} type="button">{filter.label}</button>)}</div>
         <div className="library-grid">{libraryCards.map(({ card, index }) => <button className="library-card" key={card.id} onClick={() => setSelectedStoryIndex(index)} type="button" aria-label={`查看${card.nameZh}的希腊故事`}>

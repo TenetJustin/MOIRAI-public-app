@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "__MOIRAI_APP_VERSION__";
 const SHELL_CACHE = `moirai-shell-${APP_VERSION}`;
 const MEDIA_CACHE = `moirai-media-${APP_VERSION}`;
 
@@ -46,6 +46,19 @@ self.addEventListener("fetch", (event) => {
         return response;
       } catch {
         return (await caches.match(request)) || (await caches.match(scopedUrl("./")));
+      }
+    })());
+    return;
+  }
+
+  if (url.pathname.endsWith("/version.json")) {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request, { cache: "no-store" });
+        if (response.ok) (await caches.open(SHELL_CACHE)).put(request, response.clone());
+        return response;
+      } catch {
+        return (await caches.match(request)) || Response.error();
       }
     })());
     return;
