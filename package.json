@@ -1,6 +1,6 @@
 {
   "name": "moirai-public-app",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -15,6 +15,7 @@
     "start": "vite preview standalone --config standalone/vite.config.ts --outDir ../dist-pwa",
     "test": "npm run test:tarot && npm run build && node --test tests/pwa.test.mjs",
     "test:tarot": "node --test tests/tarot-data.test.mjs",
+    "version:check": "node scripts/check-version.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern dist-pwa --ignore-pattern .next",
     "audit:public": "node scripts/audit-public-assets.mjs"
   },
