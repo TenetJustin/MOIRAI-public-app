@@ -449,9 +449,11 @@ export default function TarotRitual() {
           <p className="oracle-echo-opening">{localOracleReading.opening}</p>
           <div className="oracle-thread-grid">{localOracleReading.threads.map((thread, index) => <article key={`${thread.position}-${index}`}><span>{thread.position} · {thread.orientation === "upright" ? "正位" : "逆位"}</span><h4>{thread.title}</h4><p>{thread.text}</p></article>)}</div>
           {localOracleReading.combinations.length > 0 && <div className="oracle-combinations"><small>牌组关系</small>{localOracleReading.combinations.map((combination) => <p key={combination.title}><b>{combination.title}</b>：{combination.text}</p>)}</div>}
-          <div className="oracle-synthesis"><small>综合回应</small><p>{localOracleReading.synthesis}</p></div>
+          <div className="oracle-synthesis"><small>因果链</small><p>{localOracleReading.causalChain}</p></div>
+          <div className="oracle-synthesis"><small>共同主题</small><p>{localOracleReading.commonTheme}</p></div>
+          <div className="oracle-synthesis oracle-priorities"><small>处理优先级</small><ol>{localOracleReading.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
           <div className="oracle-synthesis"><small>希腊神话桥梁</small><p>{localOracleReading.greekBridge}</p></div>
-          <blockquote>{localOracleReading.advice}</blockquote>
+          <div className="oracle-synthesis oracle-actions"><small>具体行动</small><ol>{localOracleReading.actions.map((action) => <li key={action}>{action}</li>)}</ol></div>
           <p className="oracle-connection-note">本次解读完全由设备内的 78 张牌数据库、牌阵位置规则和预先批准的组合文本生成；不连接 AI 或第三方接口。</p>
         </section>
         <div className="reading-actions"><button className="primary" onClick={saveReading} disabled={saved} type="button">{saved ? "已保存到命运档案" : "保存本次记录"}</button><button className="secondary" onClick={startNewRitual} type="button">开始新的仪式</button></div>
