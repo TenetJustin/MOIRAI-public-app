@@ -2,7 +2,6 @@ export const MOIRAI_STORAGE_KEYS = {
   records: "olympus-tarot-archive",
   favorites: "moirai-favorites",
   settings: "moirai-settings",
-  oracleSession: "moirai-oracle-connection",
 } as const;
 
 export type ReadingRecord = {
@@ -10,7 +9,7 @@ export type ReadingRecord = {
   createdAt: string;
   question: string;
   spread: "single" | "three" | "celtic";
-  cards: { id: string; position: string }[];
+  cards: { id: string; position: string; orientation?: "upright" | "reversed" }[];
 };
 
 export type MoiraiBackup = {
@@ -75,5 +74,5 @@ export function clearLocalMoiraiData() {
   localStorage.removeItem(MOIRAI_STORAGE_KEYS.records);
   localStorage.removeItem(MOIRAI_STORAGE_KEYS.favorites);
   localStorage.removeItem(MOIRAI_STORAGE_KEYS.settings);
-  sessionStorage.removeItem(MOIRAI_STORAGE_KEYS.oracleSession);
+  sessionStorage.removeItem("moirai-oracle-connection");
 }

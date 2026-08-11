@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "question_categories": {
+    "love": {
+      "label": "爱情",
+      "field": "love",
+      "patterns": [
+        "爱情",
+        "感情",
+        "恋爱",
+        "复合",
+        "伴侣",
+        "婚姻",
+        "喜欢",
+        "单身"
+      ]
+    },
+    "career": {
+      "label": "事业／学业",
+      "field": "career_study",
+      "patterns": [
+        "事业",
+        "工作",
+        "职业",
+        "项目",
+        "升职",
+        "求职",
+        "学业",
+        "学习",
+        "考试"
+      ]
+    },
+    "wealth": {
+      "label": "财富",
+      "field": "wealth",
+      "patterns": [
+        "财富",
+        "金钱",
+        "财务",
+        "收入",
+        "投资",
+        "预算",
+        "债务",
+        "资源"
+      ]
+    },
+    "relationship": {
+      "label": "人际",
+      "field": "relationship",
+      "patterns": [
+        "人际",
+        "朋友",
+        "家庭",
+        "同事",
+        "合作",
+        "社交",
+        "团队"
+      ]
+    },
+    "self": {
+      "label": "自我",
+      "field": "self",
+      "patterns": [
+        "自我",
+        "内心",
+        "成长",
+        "情绪",
+        "状态",
+        "焦虑",
+        "方向",
+        "改变"
+      ]
+    },
+    "general": {
+      "label": "综合",
+      "field": "upright",
+      "patterns": []
+    }
+  },
+  "orientation": {
+    "upright": {
+      "label": "正位",
+      "effects": [
+        "增强核心牌义",
+        "显化可用资源",
+        "描述外在发展"
+      ]
+    },
+    "reversed": {
+      "label": "逆位",
+      "effects": [
+        "阻碍",
+        "延迟",
+        "内在问题",
+        "过度",
+        "缺失",
+        "失衡"
+      ]
+    }
+  },
+  "combinations": [
+    {
+      "type": "reinforcement",
+      "cards": [
+        "m19",
+        "m21"
+      ],
+      "title": "成功完成",
+      "text": "太阳的显现与世界的完成彼此强化，说明成果不仅被看见，也进入可收尾、可整合的新阶段。"
+    },
+    {
+      "type": "conflict",
+      "cards": [
+        "m15",
+        "m11"
+      ],
+      "title": "欲望与规则冲突",
+      "text": "恶魔的依附与正义的责任形成冲突，需要把欲望、契约和后果放在同一尺度衡量。"
+    },
+    {
+      "type": "transformation",
+      "cards": [
+        "m13",
+        "m17"
+      ],
+      "title": "结束后迎来希望",
+      "text": "死神先清理不可继续的形式，星星随后恢复信任；希望建立在接受结束之后。"
+    },
+    {
+      "type": "transformation",
+      "cards": [
+        "m16",
+        "m17"
+      ],
+      "title": "崩塌后的疗愈",
+      "text": "高塔揭露失效结构，星星提供诚实而缓慢的重建方向。"
+    },
+    {
+      "type": "reinforcement",
+      "cards": [
+        "m01",
+        "wands-ace"
+      ],
+      "title": "意图点燃行动",
+      "text": "魔术师的资源整合与权杖一的火种结合，适合把想法迅速转化为第一个可验证行动。"
+    },
+    {
+      "type": "conflict",
+      "cards": [
+        "m18",
+        "swords-ace"
+      ],
+      "title": "直觉与事实校准",
+      "text": "月亮带来模糊感受，宝剑一要求清楚事实；既不否定直觉，也不让投射替代证据。"
+    },
+    {
+      "type": "reinforcement",
+      "cards": [
+        "cups-two",
+        "m06"
+      ],
+      "title": "互惠与价值一致",
+      "text": "圣杯二的平等回应强化恋人的价值选择，关系发展取决于双方是否作出一致承诺。"
+    },
+    {
+      "type": "conflict",
+      "cards": [
+        "pentacles-four",
+        "cups-six"
+      ],
+      "title": "安全与过去依恋",
+      "text": "对资源的抓紧与对过去的留恋互相加强，需辨认安全感是否已经变成停滞。"
+    },
+    {
+      "type": "transformation",
+      "cards": [
+        "swords-ten",
+        "m00"
+      ],
+      "title": "终点转为新起点",
+      "text": "宝剑十确认旧过程已经结束，愚人把注意力带回尚未被定义的新道路。"
+    },
+    {
+      "type": "reinforcement",
+      "cards": [
+        "pentacles-three",
+        "wands-three"
+      ],
+      "title": "协作带来扩展",
+      "text": "星币三的技艺协作与权杖三的远见结合，使扩展建立在可靠分工与反馈之上。"
+    }
+  ],
+  "multi_card": {
+    "major_arcana_threshold": 0.5,
+    "dominant_suit_minimum": 2,
+    "orientation_balance": {
+      "more_upright": "可用资源较多",
+      "more_reversed": "阻塞与内在调整是当前重点",
+      "equal": "外在发展与内在调整并存"
+    },
+    "prohibition": [
+      "不得拼接后冒充综合解读",
+      "不得输出确定日期或绝对预言",
+      "不得生成数据库与规则之外的新事实性文本"
+    ]
+  }
+}
