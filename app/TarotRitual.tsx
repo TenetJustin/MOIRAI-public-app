@@ -5,11 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { SpreadKey, Suit, TarotCardData, spreads, tarotDeck } from "./deck";
 import { clearLocalMoiraiData, createBackup, MOIRAI_STORAGE_KEYS, parseBackup, ReadingRecord, readRecords, restoreBackup } from "./localData";
-import { createLocalOracleReading, ExternalOracleProvider, oracleProviderPresets, requestExternalOracleReading } from "./oracleInterpretation";
+import { CardOrientation, createLocalOracleReading, randomOrientation, secureRandomUnit, shuffleDeckSecure } from "./oracleInterpretation";
 import { tarotStories } from "./stories";
 
 type Step = "landing" | "intention" | "spread" | "purify" | "shuffle" | "cut" | "draw" | "reading" | "archive" | "library";
 type LibrarySuit = "all" | Suit;
+type DrawnCard = { card: TarotCardData; orientation: CardOrientation };
 
 const ritualSteps: { key: Step; label: string }[] = [
   { key: "intention", label: "意图" }, { key: "spread", label: "牌阵" },
@@ -23,15 +24,6 @@ const libraryFilters: { key: LibrarySuit; label: string }[] = [
   { key: "wands", label: "权杖" }, { key: "cups", label: "圣杯" },
   { key: "swords", label: "宝剑" }, { key: "pentacles", label: "星币" },
 ];
-
-function shuffleDeck<T>(items: T[]) {
-  const next = [...items];
-  for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [next[i], next[j]] = [next[j], next[i]];
-  }
-  return next;
-}
 
 function ThreeTable({ active }: { active: boolean }) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -207,10 +199,10 @@ function PantheonBackdrop() {
   </div>;
 }
 
-function CardFace({ card }: { card: TarotCardData }) {
+function CardFace({ card, orientation = "upright" }: { card: TarotCardData; orientation?: CardOrientation }) {
   const pipCount = card.pipCount ?? 0;
   const [customArtAvailable, setCustomArtAvailable] = useState(true);
-  return <div className={`card-side card-front suit-${card.suit}`}>
+  return <div className={`card-side card-front suit-${card.suit} orientation-${orientation}`}>
     {customArtAvailable && <img className="complete-card-art" src={`./cards/fronts/${card.id}.webp`} alt={`${card.nameZh}：${card.myth}`} draggable={false} onError={() => setCustomArtAvailable(false)} />}
     <div className="card-number">{card.numeral}</div>
     <div className="art-field">
@@ -229,14 +221,14 @@ function CardReadingBack({ card }: { card: TarotCardData }) {
   </div>;
 }
 
-function TarotCard({ card, position, className = "" }: { card: TarotCardData; position?: string; className?: string }) {
+function TarotCard({ card, orientation, position, className = "" }: { card: TarotCardData; orientation: CardOrientation; position?: string; className?: string }) {
   const [flipped, setFlipped] = useState(false);
   return <div className={`reading-card-wrap ${className}`}>
-    {position && <div className="position-label">{position}</div>}
+    {position && <div className="position-label">{position} · {orientation === "upright" ? "正位" : "逆位"}</div>}
     <motion.button
       className="tarot-card"
       onClick={() => setFlipped((value) => !value)}
-      aria-label={`${card.nameZh}，点击${flipped ? "查看牌面" : "旋转查看解读"}`}
+      aria-label={`${card.nameZh}${orientation === "upright" ? "正位" : "逆位"}，点击${flipped ? "查看牌面" : "旋转查看解读"}`}
       type="button"
     >
       <AnimatePresence initial={false} mode="wait">
@@ -248,7 +240,7 @@ function TarotCard({ card, position, className = "" }: { card: TarotCardData; po
           exit={{ rotateY: flipped ? -90 : 90, opacity: .25 }}
           transition={{ duration: .32, ease: [0.4, 0, 0.2, 1] }}
         >
-          {flipped ? <CardReadingBack card={card} /> : <CardFace card={card} />}
+          {flipped ? <CardReadingBack card={card} /> : <CardFace card={card} orientation={orientation} />}
         </motion.div>
       </AnimatePresence>
     </motion.button>
@@ -269,22 +261,14 @@ export default function TarotRitual() {
   const [spread, setSpread] = useState<SpreadKey>("single");
   const [purified, setPurified] = useState(false);
   const [shuffleCount, setShuffleCount] = useState(0);
-  const [deck, setDeck] = useState(() => shuffleDeck(tarotDeck));
+  const [deck, setDeck] = useState(() => shuffleDeckSecure(tarotDeck));
   const [remaining, setRemaining] = useState<TarotCardData[]>([]);
-  const [drawn, setDrawn] = useState<TarotCardData[]>([]);
+  const [drawn, setDrawn] = useState<DrawnCard[]>([]);
   const [cutPile, setCutPile] = useState<number | null>(null);
   const [records, setRecords] = useState<ReadingRecord[]>([]);
   const [saved, setSaved] = useState(false);
   const [librarySuit, setLibrarySuit] = useState<LibrarySuit>("all");
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number | null>(null);
-  const [oracleSettingsOpen, setOracleSettingsOpen] = useState(false);
-  const [oracleProvider, setOracleProvider] = useState<ExternalOracleProvider>("deepseek");
-  const [oracleEndpoint, setOracleEndpoint] = useState(oracleProviderPresets.deepseek.endpoint);
-  const [oracleModel, setOracleModel] = useState(oracleProviderPresets.deepseek.model);
-  const [oracleApiKey, setOracleApiKey] = useState("");
-  const [externalOracleText, setExternalOracleText] = useState("");
-  const [externalOracleStatus, setExternalOracleStatus] = useState<"idle" | "loading" | "error" | "complete">("idle");
-  const [externalOracleError, setExternalOracleError] = useState("");
   const [archiveMessage, setArchiveMessage] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
   const { enabled: audioEnabled, toggle: toggleAudio, chime } = useOracleAudio();
@@ -292,15 +276,6 @@ export default function TarotRitual() {
   useEffect(() => {
     const restoreRecords = window.setTimeout(() => {
       setRecords(readRecords());
-      try {
-        const stored = JSON.parse(sessionStorage.getItem(MOIRAI_STORAGE_KEYS.oracleSession) || "null") as { provider?: ExternalOracleProvider; endpoint?: string; model?: string; apiKey?: string } | null;
-        if (stored?.provider && oracleProviderPresets[stored.provider]) {
-          setOracleProvider(stored.provider);
-          setOracleEndpoint(stored.endpoint || oracleProviderPresets[stored.provider].endpoint);
-          setOracleModel(stored.model || oracleProviderPresets[stored.provider].model);
-          setOracleApiKey(stored.apiKey || "");
-        }
-      } catch { /* Keep the safe defaults. */ }
     }, 0);
     return () => window.clearTimeout(restoreRecords);
   }, []);
@@ -355,10 +330,10 @@ export default function TarotRitual() {
 
   const go = (next: Step) => { setSelectedStoryIndex(null); setStep(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const resetRitual = () => {
-    setQuestion(""); setSpread("single"); setPurified(false); setShuffleCount(0); setDeck(shuffleDeck(tarotDeck));
-    setRemaining([]); setDrawn([]); setCutPile(null); setSaved(false); setExternalOracleText(""); setExternalOracleStatus("idle"); setExternalOracleError(""); go("landing");
+    setQuestion(""); setSpread("single"); setPurified(false); setShuffleCount(0); setDeck(shuffleDeckSecure(tarotDeck));
+    setRemaining([]); setDrawn([]); setCutPile(null); setSaved(false); go("landing");
   };
-  const shuffle = () => { setDeck(shuffleDeck(deck)); setShuffleCount((v) => v + 1); chime(); };
+  const shuffle = () => { setDeck(shuffleDeckSecure(deck)); setShuffleCount((v) => v + 1); chime(); };
   const chooseCut = (pile: number) => {
     const size = Math.floor(deck.length / 3);
     const piles = [deck.slice(0, size), deck.slice(size, size * 2), deck.slice(size * 2)];
@@ -367,10 +342,10 @@ export default function TarotRitual() {
     setDeck(reordered); setRemaining(reordered); setCutPile(pile); chime();
     window.setTimeout(() => go("draw"), 560);
   };
-  const drawCard = (slot: number) => {
+  const drawCard = () => {
     if (drawn.length >= spreads[spread].count || remaining.length === 0) return;
-    const index = (slot * 7 + drawn.length * 11) % remaining.length;
-    const selected = remaining[index];
+    const index = Math.floor(secureRandomUnit() * remaining.length);
+    const selected: DrawnCard = { card: remaining[index], orientation: randomOrientation() };
     const nextDrawn = [...drawn, selected];
     setDrawn(nextDrawn); setRemaining(remaining.filter((_, i) => i !== index)); chime();
     if (nextDrawn.length === spreads[spread].count) window.setTimeout(() => go("reading"), 720);
@@ -379,35 +354,16 @@ export default function TarotRitual() {
     if (saved) return;
     const record: ReadingRecord = {
       id: `${Date.now()}`, createdAt: new Date().toISOString(), question: question.trim() || "未写下的问题",
-      spread, cards: drawn.map((card, index) => ({ id: card.id, position: spreads[spread].positions[index] })),
+      spread, cards: drawn.map(({ card, orientation }, index) => ({ id: card.id, position: spreads[spread].positions[index], orientation })),
     };
     persist([record, ...records]); setSaved(true); chime();
   };
   const currentIndex = ritualSteps.findIndex((item) => item.key === step);
   const chosenSpread = spreads[spread];
-  const oracleCards = useMemo(() => drawn.map((card, index) => ({ card, position: chosenSpread.positions[index] })), [drawn, chosenSpread.positions]);
-  const localOracleReading = useMemo(() => createLocalOracleReading(question, oracleCards), [question, oracleCards]);
+  const oracleCards = useMemo(() => drawn.map(({ card, orientation }, index) => ({ card, orientation, position: chosenSpread.positions[index] })), [drawn, chosenSpread.positions]);
+  const localOracleReading = useMemo(() => createLocalOracleReading(question, spread, oracleCards), [question, spread, oracleCards]);
   const archiveCards = useCallback((record: ReadingRecord) => record.cards.map((item) => ({ ...item, card: tarotDeck.find((card) => card.id === item.id)! })), []);
   const libraryCards = useMemo(() => tarotDeck.map((card, index) => ({ card, index })).filter(({ card }) => librarySuit === "all" || card.suit === librarySuit), [librarySuit]);
-
-  const chooseOracleProvider = (provider: ExternalOracleProvider) => {
-    const preset = oracleProviderPresets[provider];
-    setOracleProvider(provider); setOracleEndpoint(preset.endpoint); setOracleModel(preset.model);
-    setExternalOracleText(""); setExternalOracleStatus("idle"); setExternalOracleError("");
-  };
-
-  const runExternalOracle = async () => {
-    setExternalOracleStatus("loading"); setExternalOracleError(""); setExternalOracleText("");
-    const config = { provider: oracleProvider, endpoint: oracleEndpoint, model: oracleModel, apiKey: oracleApiKey };
-    try {
-      sessionStorage.setItem(MOIRAI_STORAGE_KEYS.oracleSession, JSON.stringify(config));
-      const result = await requestExternalOracleReading(config, { question, spreadName: chosenSpread.name, cards: oracleCards, localReading: localOracleReading });
-      setExternalOracleText(result); setExternalOracleStatus("complete");
-    } catch (error) {
-      setExternalOracleError(error instanceof Error ? error.message : "接口暂时无法完成解读。");
-      setExternalOracleStatus("error");
-    }
-  };
 
   return <main className={`oracle-app step-${step}`}>
     <ThreeTable active={["shuffle", "cut", "draw"].includes(step)} />
@@ -476,42 +432,25 @@ export default function TarotRitual() {
       </StepShell>}
 
       {step === "draw" && <StepShell key="draw" eyebrow={`STEP 06 · DRAW ${drawn.length}/${chosenSpread.count}`} title={drawn.length ? "继续抽取下一张" : "从牌阵中召唤一张牌"}>
-        <div className="drawn-mini">{drawn.map((card, index) => <div key={card.id}><span>{chosenSpread.positions[index]}</span><b>{card.nameZh}</b></div>)}</div>
-        <div className="card-fan">{Array.from({ length: 17 }, (_, index) => <button key={index} style={{ "--i": index } as React.CSSProperties} onClick={() => drawCard(index)} type="button" aria-label={`选择第 ${index + 1} 张牌`}><CommonBack compact /></button>)}</div>
-        <p className="soft-note">点击一张牌。你的选择只决定抽取位置，不会发送任何数据。</p>
+        <div className="drawn-mini">{drawn.map(({ card, orientation }, index) => <div key={card.id}><span>{chosenSpread.positions[index]}</span><b>{card.nameZh} · {orientation === "upright" ? "正位" : "逆位"}</b></div>)}</div>
+        <div className="card-fan">{Array.from({ length: 17 }, (_, index) => <button key={index} style={{ "--i": index } as React.CSSProperties} onClick={drawCard} type="button" aria-label={`随机抽取第 ${drawn.length + 1} 张牌`}><CommonBack compact /></button>)}</div>
+        <p className="soft-note">点击任意牌背都会从剩余牌组安全随机抽取，并独立随机生成正逆位；本次仪式不会重复同一张牌，也不会发送任何数据。</p>
       </StepShell>}
 
       {step === "reading" && <motion.section key="reading" className="reading-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <p className="eyebrow">THE ORACLE HAS ANSWERED</p><h2>神话的镜面已经展开</h2><div className="question-echo">“{question}”</div>
-        <div className={`reading-spread spread-${spread}`}>{drawn.map((card, index) => <TarotCard key={card.id} card={card} position={chosenSpread.positions[index]} className={`card-position-${index}`} />)}</div>
+        <div className={`reading-spread spread-${spread}`}>{drawn.map(({ card, orientation }, index) => <TarotCard key={card.id} card={card} orientation={orientation} position={chosenSpread.positions[index]} className={`card-position-${index}`} />)}</div>
         <p className="reading-help">点击任意卡牌，让它水平旋转并显示专属中性解读。</p>
         <section className="oracle-echo" aria-labelledby="oracle-echo-title">
           <div className="oracle-echo-heading"><div><p className="eyebrow">THE THREAD ANSWERS</p><h3 id="oracle-echo-title">命运线的回声</h3></div><span>本地象征规则生成</span></div>
           <div className="oracle-echo-question"><small>你的意图</small><p>“{question}”</p><b>{localOracleReading.theme}</b></div>
           <p className="oracle-echo-opening">{localOracleReading.opening}</p>
-          <div className="oracle-thread-grid">{localOracleReading.threads.map((thread, index) => <article key={`${thread.position}-${index}`}><span>{thread.position}</span><h4>{thread.title}</h4><p>{thread.text}</p></article>)}</div>
+          <div className="oracle-thread-grid">{localOracleReading.threads.map((thread, index) => <article key={`${thread.position}-${index}`}><span>{thread.position} · {thread.orientation === "upright" ? "正位" : "逆位"}</span><h4>{thread.title}</h4><p>{thread.text}</p></article>)}</div>
+          {localOracleReading.combinations.length > 0 && <div className="oracle-combinations"><small>牌组关系</small>{localOracleReading.combinations.map((combination) => <p key={combination.title}><b>{combination.title}</b>：{combination.text}</p>)}</div>}
           <div className="oracle-synthesis"><small>综合回应</small><p>{localOracleReading.synthesis}</p></div>
-          <blockquote>{localOracleReading.reflection}</blockquote>
-
-          <div className="oracle-connection">
-            <button className="oracle-connection-toggle" onClick={() => setOracleSettingsOpen((value) => !value)} type="button" aria-expanded={oracleSettingsOpen}>
-              {oracleSettingsOpen ? "收起可选接口设置" : "使用自己的模型深化解读"}<span>⌄</span>
-            </button>
-            {oracleSettingsOpen && <div className="oracle-connection-panel">
-              <div className="oracle-form-grid">
-                <label><span>接口类型</span><select value={oracleProvider} onChange={(event) => chooseOracleProvider(event.target.value as ExternalOracleProvider)}>
-                  {(Object.keys(oracleProviderPresets) as ExternalOracleProvider[]).map((provider) => <option value={provider} key={provider}>{oracleProviderPresets[provider].label}</option>)}
-                </select></label>
-                <label><span>模型名称</span><input value={oracleModel} onChange={(event) => setOracleModel(event.target.value)} placeholder="例如 deepseek-chat 或 llama3.1" /></label>
-                <label className="oracle-endpoint"><span>OpenAI 兼容接口地址</span><input value={oracleEndpoint} onChange={(event) => setOracleEndpoint(event.target.value)} placeholder="http://localhost:11434/v1/chat/completions" /></label>
-                <label className="oracle-api-key"><span>API Key <i>{oracleProviderPresets[oracleProvider].keyHint}</i></span><input type="password" value={oracleApiKey} onChange={(event) => setOracleApiKey(event.target.value)} autoComplete="off" placeholder="仅保存在当前浏览器会话" /></label>
-              </div>
-              <p className="oracle-connection-note">默认解读始终在本地完成。只有点击下方按钮时，问题和本次牌面才会发送到你填写的接口；密钥不会进入命运档案。Ollama 或 LM Studio 若连接失败，请在本机服务中允许当前网页访问。</p>
-              <button className="secondary oracle-generate" onClick={runExternalOracle} disabled={externalOracleStatus === "loading"} type="button">{externalOracleStatus === "loading" ? "正在连接命运线…" : `使用 ${oracleProviderPresets[oracleProvider].label} 深化解读`}</button>
-              {externalOracleStatus === "error" && <p className="oracle-error" role="alert">{externalOracleError} 本地解读仍可正常使用。</p>}
-            </div>}
-            {externalOracleStatus === "complete" && <article className="external-oracle-result"><div><small>外部接口的延伸解读</small><span>{oracleProviderPresets[oracleProvider].label}</span></div><p>{externalOracleText}</p></article>}
-          </div>
+          <div className="oracle-synthesis"><small>希腊神话桥梁</small><p>{localOracleReading.greekBridge}</p></div>
+          <blockquote>{localOracleReading.advice}</blockquote>
+          <p className="oracle-connection-note">本次解读完全由设备内的 78 张牌数据库、牌阵位置规则和预先批准的组合文本生成；不连接 AI 或第三方接口。</p>
         </section>
         <div className="reading-actions"><button className="primary" onClick={saveReading} disabled={saved} type="button">{saved ? "已保存到命运档案" : "保存本次记录"}</button><button className="secondary" onClick={resetRitual} type="button">开始新的仪式</button></div>
       </motion.section>}
@@ -529,7 +468,7 @@ export default function TarotRitual() {
         {archiveMessage && <p className="archive-message" role="status">{archiveMessage}</p>}
         {records.length === 0 ? <div className="empty-archive"><span>◎</span><h3>档案仍是空白</h3><p>完成一次仪式并保存，神谕会在这里留下日期与牌阵。</p><button className="primary" onClick={() => go("intention")} type="button">开始第一次仪式</button></div> : <>
           <div className="archive-toolbar"><span>{records.length} 次本地记录</span><small>仅存于当前设备</small></div>
-          <div className="archive-list">{records.map((record) => <article key={record.id}><div className="archive-date"><b>{new Date(record.createdAt).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}</b><span>{spreads[record.spread].name}</span></div><h3>{record.question}</h3><div className="archive-card-row">{archiveCards(record).map(({ card, position }) => <div key={card.id}><span>{card.sigil}</span><p><small>{position}</small><b>{card.nameZh}</b><em>{card.myth}</em></p></div>)}</div><button className="delete-record" onClick={() => persist(records.filter((item) => item.id !== record.id))} type="button">删除这条记录</button></article>)}</div>
+          <div className="archive-list">{records.map((record) => <article key={record.id}><div className="archive-date"><b>{new Date(record.createdAt).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}</b><span>{spreads[record.spread].name}</span></div><h3>{record.question}</h3><div className="archive-card-row">{archiveCards(record).map(({ card, position, orientation = "upright" }) => <div key={card.id}><span>{card.sigil}</span><p><small>{position} · {orientation === "upright" ? "正位" : "逆位"}</small><b>{card.nameZh}</b><em>{card.myth}</em></p></div>)}</div><button className="delete-record" onClick={() => persist(records.filter((item) => item.id !== record.id))} type="button">删除这条记录</button></article>)}</div>
         </>}
       </motion.section>}
 

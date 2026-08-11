@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "spreads": {
+    "single": {
+      "name_cn": "单牌神谕",
+      "count": 1,
+      "positions": [
+        {
+          "id": "focus",
+          "name_cn": "此刻的镜面",
+          "role": "回应当前问题的核心能量",
+          "upright_rule": "直接呈现可用资源与发展方向",
+          "reversed_rule": "指出阻塞、延迟、内在化或失衡"
+        }
+      ],
+      "synthesis": {
+        "opening": "用牌的核心牌义直接回应问题",
+        "sequence": "牌义→问题方向→神话桥梁→行动建议"
+      }
+    },
+    "three": {
+      "name_cn": "过去·现在·未来",
+      "count": 3,
+      "positions": [
+        {
+          "id": "past",
+          "name_cn": "过去影响",
+          "role": "说明形成当前局面的经验、资源或旧模式",
+          "upright_rule": "指出已积累的支持",
+          "reversed_rule": "指出仍未整合的旧问题"
+        },
+        {
+          "id": "present",
+          "name_cn": "当前状态",
+          "role": "说明现在最活跃的能量与选择",
+          "upright_rule": "指出当下可运用的力量",
+          "reversed_rule": "指出当下的阻塞或失衡"
+        },
+        {
+          "id": "future",
+          "name_cn": "未来趋势",
+          "role": "说明延续当前选择后较可能出现的方向",
+          "upright_rule": "描述可发展的机会",
+          "reversed_rule": "描述延迟、调整与风险，不作确定预言"
+        }
+      ],
+      "synthesis": {
+        "opening": "把过去的原因、现在的选择与未来趋势写成因果连续句",
+        "connectors": [
+          "过去形成了",
+          "因此现在",
+          "若保持当前路径，未来更可能"
+        ]
+      }
+    },
+    "celtic": {
+      "name_cn": "凯尔特十字",
+      "count": 10,
+      "positions": [
+        {
+          "id": "current",
+          "name_cn": "当前状态",
+          "role": "问题此刻最显著的现实与能量",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "challenge",
+          "name_cn": "主要阻碍",
+          "role": "无论正逆位，都从阴影、过度或代价角度解释",
+          "upright_rule": "读取正位能量的过度、代价或盲点",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "root",
+          "name_cn": "深层原因",
+          "role": "潜意识需要、长期信念与根本动力",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "past",
+          "name_cn": "过去影响",
+          "role": "已经发生但仍在作用的经验",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "potential",
+          "name_cn": "潜在可能",
+          "role": "尚未完全实现的资源、目标或上限",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "near_future",
+          "name_cn": "未来发展",
+          "role": "近期可观察趋势与必要调整",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "self",
+          "name_cn": "自我态度",
+          "role": "求问者的认知、情绪与行动姿态",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "environment",
+          "name_cn": "外部环境",
+          "role": "他人、制度、资源与环境影响",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "hopes_fears",
+          "name_cn": "希望与恐惧",
+          "role": "同一愿望的吸引面与焦虑面",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "读取阻塞、内在化、缺失或失衡"
+        },
+        {
+          "id": "outcome",
+          "name_cn": "最终结果",
+          "role": "延续当前路径的阶段结果及可改变条件",
+          "upright_rule": "读取可用资源和发展方向",
+          "reversed_rule": "结果可能延迟或需要先完成内在调整"
+        }
+      ],
+      "synthesis": {
+        "groups": [
+          [
+            "current",
+            "challenge"
+          ],
+          [
+            "root",
+            "past"
+          ],
+          [
+            "potential",
+            "near_future"
+          ],
+          [
+            "self",
+            "environment"
+          ],
+          [
+            "hopes_fears",
+            "outcome"
+          ]
+        ],
+        "opening": "先解释核心矛盾，再连接原因、发展、内外因素与条件性结果"
+      }
+    }
+  }
+}

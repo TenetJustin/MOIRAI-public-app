@@ -7,8 +7,8 @@ MOIRAI 是一款隐私优先、完全在用户设备本地运行的 Greek Mythol
 - 单牌、三牌过去／现在／未来、凯尔特十字仪式
 - 78 张完整牌面与 78 张一一对应的文字解释背面
 - Three.js 牌桌、Framer Motion 动画与 Web Audio API 环境音
-- 规则驱动的“命运线的回声”本地解读
-- 可选的用户自带 DeepSeek、Ollama、LM Studio 或 OpenAI 兼容接口
+- 78 张牌完整 RWS 正逆位、六类问题与希腊神话桥梁数据库
+- 规则驱动的“命运线的回声”本地解读，不连接任何 AI 或第三方接口
 - local-first 命运档案，以及备份导出、导入恢复和本地数据清除
 - 可安装到手机、iPad 和电脑，支持基础离线访问
 
@@ -38,6 +38,7 @@ npm run build:standalone
 ## 目录
 
 - `app/`：React 核心交互、78 张牌数据与本地解读逻辑
+- `app/data/tarot/`：从私有权威源数据同步的受审计离线运行副本
 - `public/cards/`：部署用优化牌面
 - `public/icons/`、`public/manifest.json`：PWA 安装资源
 - `pwa/service-worker.js`：离线策略源文件

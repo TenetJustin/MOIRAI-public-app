@@ -199,6 +199,7 @@ textarea::placeholder { color: #969087; }
 .card-number { font-family: Georgia, serif; font-size: 18px; letter-spacing: .12em; position: relative; z-index: 2; }
 .art-field { position: relative; display: grid; place-items: center; min-height: 0; }
 .complete-card-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 20; background: var(--paper); user-select: none; pointer-events: none; }
+.card-front.orientation-reversed .complete-card-art { transform: rotate(180deg); }
 .card-sigil { font-family: Georgia, serif; font-size: clamp(62px, 9vw, 112px); line-height: 1; position: relative; z-index: 3; }
 .halo-lines { width: 64%; aspect-ratio: 1; position: absolute; border: 1px dotted var(--ink); border-radius: 50%; opacity: .6; }
 .halo-lines::before, .halo-lines::after { content:""; position:absolute; inset:12%; border:1px solid var(--yellow); border-radius:50%; }.halo-lines::after { inset: -15%; border-color: rgba(23,23,23,.18); }
@@ -245,6 +246,9 @@ textarea::placeholder { color: #969087; }
 .oracle-synthesis { margin-top:18px; padding:20px 22px; background:#1d1b18; color:#f5ecdf; }
 .oracle-synthesis small { display:block; margin-bottom:10px; color:#d6a83d; font-size:9px; letter-spacing:.16em; }
 .oracle-synthesis p { margin:0; font-family:Georgia,"Songti SC",serif; font-size:14px; line-height:1.9; }
+.oracle-combinations { margin-top:18px; padding:18px 22px; border:1px solid rgba(207,63,70,.28); background:#fffaf1; }
+.oracle-combinations small { display:block; margin-bottom:8px; color:var(--red); font-size:9px; letter-spacing:.16em; }
+.oracle-combinations p { margin:7px 0; font-family:Georgia,"Songti SC",serif; font-size:13px; line-height:1.75; }
 .oracle-echo blockquote { margin:18px 0 0; padding:16px 20px; color:#72510e; background:rgba(169,113,14,.08); border-left:3px solid #a87512; font-family:Georgia,"Songti SC",serif; font-size:13px; line-height:1.8; }
 .oracle-connection { margin-top:24px; padding-top:20px; border-top:1px solid rgba(55,39,20,.18); }
 .oracle-connection-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; min-height:44px; padding:0 15px; color:#554a3d; background:rgba(255,252,246,.45); border:1px solid rgba(57,40,19,.2); cursor:pointer; font-size:11px; letter-spacing:.05em; }
