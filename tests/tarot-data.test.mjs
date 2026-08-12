@@ -48,6 +48,7 @@ test("application contains no external oracle implementation", async () => {
   assert.match(source, /function buildCommonTheme/);
   assert.match(source, /function buildPriorities/);
   assert.match(source, /function buildActions/);
+  assert.match(source, /if \(cards\.length < spreadRules\[spread\]\.count\)/);
   assert.match(source, /过去.*形成了当前局面的基础.*现在.*旧影响正在怎样进入选择/s);
   assert.match(source, /当前状态由.*直接牵制.*深层来源.*自我态度与外部环境/s);
   assert.match(source, /直接行动：.*后续行动：.*调整原则：/s);
