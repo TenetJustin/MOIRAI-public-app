@@ -189,6 +189,23 @@ function buildSynthesis(causalChain: string, commonTheme: string) {
 
 export function createLocalOracleReading(question: string, spread: SpreadKey, cards: OracleCardContext[]): LocalOracleReading {
   const category = classifyQuestion(question);
+  if (cards.length < spreadRules[spread].count) {
+    return {
+      category,
+      theme: categoryRules[category].label,
+      opening: "牌阵尚未完整展开，完成抽牌后将由本地规则生成解读。",
+      coreMeaning: "",
+      threads: [],
+      combinations: [],
+      synthesis: "",
+      causalChain: "",
+      commonTheme: "",
+      priorities: [],
+      actions: [],
+      greekBridge: "",
+      advice: "",
+    };
+  }
   const threads = cards.map(({ card, position, orientation }, index) => {
     const data = databaseById.get(card.id);
     if (!data) throw new Error(`塔罗数据库缺少牌：${card.id}`);
