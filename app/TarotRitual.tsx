@@ -11,6 +11,10 @@ import { tarotStories } from "./stories";
 type Step = "landing" | "intention" | "spread" | "purify" | "shuffle" | "cut" | "draw" | "reading" | "archive" | "library";
 type LibrarySuit = "all" | Suit;
 type DrawnCard = { card: TarotCardData; orientation: CardOrientation };
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
 
 const ritualSteps: { key: Step; label: string }[] = [
   { key: "intention", label: "意图" }, { key: "spread", label: "牌阵" },
@@ -271,6 +275,9 @@ export default function TarotRitual() {
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number | null>(null);
   const [archiveMessage, setArchiveMessage] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
+  const [installHelpOpen, setInstallHelpOpen] = useState(false);
+  const [appInstalled, setAppInstalled] = useState(false);
   const { enabled: audioEnabled, toggle: toggleAudio, chime } = useOracleAudio();
 
   useEffect(() => {
@@ -278,6 +285,19 @@ export default function TarotRitual() {
       setRecords(readRecords());
     }, 0);
     return () => window.clearTimeout(restoreRecords);
+  }, []);
+
+  useEffect(() => {
+    const standalone = window.matchMedia("(display-mode: standalone)").matches || ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+    setAppInstalled(standalone);
+    const capturePrompt = (event: Event) => { event.preventDefault(); setInstallPrompt(event as InstallPromptEvent); };
+    const markInstalled = () => { setAppInstalled(true); setInstallPrompt(null); setInstallHelpOpen(false); };
+    window.addEventListener("beforeinstallprompt", capturePrompt);
+    window.addEventListener("appinstalled", markInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", capturePrompt);
+      window.removeEventListener("appinstalled", markInstalled);
+    };
   }, []);
 
   useEffect(() => {
@@ -326,6 +346,14 @@ export default function TarotRitual() {
     setRecords([]);
     setConfirmClear(false);
     setArchiveMessage("这台设备中的 MOIRAI 本地数据已清除。");
+  };
+
+  const installApp = async () => {
+    if (!installPrompt) { setInstallHelpOpen(true); return; }
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    if (choice.outcome === "accepted") setAppInstalled(true);
+    setInstallPrompt(null);
   };
 
   const go = (next: Step) => { setSelectedStoryIndex(null); setStep(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
@@ -398,6 +426,7 @@ export default function TarotRitual() {
               <button className="moirai-primary" onClick={startNewRitual} type="button">开始仪式 <span>→</span></button>
               <button className="moirai-secondary" onClick={() => go("archive")} type="button">打开命运档案 <span>{records.length}</span></button>
               <button className="moirai-story" onClick={() => go("library")} type="button">查看 78 张塔罗牌的希腊故事 <span>↗</span></button>
+              <button className="moirai-install" onClick={() => void installApp()} disabled={appInstalled} type="button">{appInstalled ? "✓ 已安装到桌面" : "安装到手机／电脑桌面"} <span>{appInstalled ? "" : "↓"}</span></button>
             </div>
           </div>
           <div className="moirai-local"><span>LOCAL ORACLE</span><b>不登录 · 不上传 · 不使用数据库</b><span>78 MYTHIC CARDS</span></div>
@@ -493,6 +522,16 @@ export default function TarotRitual() {
         </motion.div>}</AnimatePresence>
       </motion.section>}
     </AnimatePresence>
+
+    {installHelpOpen && <div className="install-overlay" role="presentation" onClick={() => setInstallHelpOpen(false)}>
+      <section className="install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-title" onClick={(event) => event.stopPropagation()}>
+        <button className="install-close" onClick={() => setInstallHelpOpen(false)} type="button" aria-label="关闭安装说明">×</button>
+        <p className="eyebrow">INSTALL MOIRAI</p><h2 id="install-title">安装到桌面</h2>
+        <div><strong>iPhone／iPad · Safari</strong><p>点击浏览器的分享按钮，再选择“添加到主屏幕”。</p></div>
+        <div><strong>Edge／Chrome · 电脑或 Android</strong><p>打开浏览器菜单中的“应用”或“安装应用”，选择安装 MOIRAI。</p></div>
+        <small>若已经从桌面图标打开应用，无需再次安装。</small>
+      </section>
+    </div>}
     <footer><span>MOIRAI · ORACLE OF OLYMPUS</span><p>自我观照工具，不替代医疗、法律或财务专业意见。 · <a href="./copyright.html">版权与版本</a></p><b>奥林匹斯神谕 · LOCAL ONLY</b></footer>
   </main>;
 }

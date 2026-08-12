@@ -43,3 +43,12 @@ test("compiled app preserves the MOIRAI identity and local data controls", async
   assert.match(bundle, /导出备份/);
   assert.match(bundle, /清除本地数据/);
 });
+
+test("landing page provides a progressive PWA install action", async () => {
+  const source = await readFile(new URL("../app/TarotRitual.tsx", import.meta.url), "utf8");
+  assert.match(source, /beforeinstallprompt/);
+  assert.match(source, /appinstalled/);
+  assert.match(source, /安装到手机／电脑桌面/);
+  assert.match(source, /iPhone／iPad · Safari/);
+  assert.match(source, /Edge／Chrome · 电脑或 Android/);
+});
