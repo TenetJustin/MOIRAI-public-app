@@ -1,6 +1,6 @@
 # MOIRAI 版权声明
 
-Copyright © 2026 MOIRAI / ORACLE OF OLYMPUS. All rights reserved.
+Copyright © 2026 MOIRAI / TenetJustin. All rights reserved.
 
 MOIRAI、ORACLE OF OLYMPUS、奥林匹斯神谕，以及本项目中的原创塔罗牌插画、牌背、图形系统、文字内容、界面设计和代码均受适用的著作权及相关知识产权法律保护。
 
@@ -12,5 +12,9 @@ MOIRAI、ORACLE OF OLYMPUS、奥林匹斯神谕，以及本项目中的原创塔
 - 移除版权、品牌、版本或资产来源标识。
 
 访问或安装本应用仅授予个人使用当前应用功能的有限许可，不转让任何知识产权。
+
+本仓库公开可见不代表开源。完整使用条件见根目录 `LICENSE` 及网站《用户协议与数字资产使用声明》。未经事先明确书面授权，不得将任何代码、图像、文字、数据库或规则用于模型训练、微调、评估、嵌入、RAG、数据增强或数据集制作。
+
+版权、转载及授权联系：`copyright.seacoconut@outlook.com`
 
 第三方字体、工具或素材仍按各自许可证执行；授权证明与来源记录只保存在 `MOIRAI-private-assets` 私有仓库，不随部署包发布。
