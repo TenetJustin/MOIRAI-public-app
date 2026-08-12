@@ -1,7 +1,7 @@
 {
-  "appVersion": "1.3.0",
+  "appVersion": "1.4.0",
   "releasedAt": "2026-08-12",
   "assetVersion": "greek-tarot-78-v1",
   "dataSchemaVersion": 1,
-  "buildCommit": "f5fed56"
+  "buildCommit": "55e1c93"
 }

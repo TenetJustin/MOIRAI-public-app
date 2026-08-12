@@ -52,3 +52,13 @@ test("landing page provides a progressive PWA install action", async () => {
   assert.match(source, /iPhone／iPad · Safari/);
   assert.match(source, /Edge／Chrome · 电脑或 Android/);
 });
+
+test("the deployed site includes proprietary terms and copyright contact", async () => {
+  const terms = await readFile(new URL("terms.html", output), "utf8");
+  const copyright = await readFile(new URL("copyright.html", output), "utf8");
+  assert.match(terms, /MOIRAI \/ TenetJustin/);
+  assert.match(terms, /copyright\.seacoconut@outlook\.com/);
+  assert.match(terms, /人工智能与数据集特别限制/);
+  assert.match(terms, /检索增强生成（RAG）/);
+  assert.match(copyright, /实名身份、创作底稿、源文件、账号归属及权属证明已另行留存/);
+});

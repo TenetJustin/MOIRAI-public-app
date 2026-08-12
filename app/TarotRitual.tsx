@@ -532,6 +532,6 @@ export default function TarotRitual() {
         <small>若已经从桌面图标打开应用，无需再次安装。</small>
       </section>
     </div>}
-    <footer><span>MOIRAI · ORACLE OF OLYMPUS</span><p>自我观照工具，不替代医疗、法律或财务专业意见。 · <a href="./copyright.html">版权与版本</a></p><b>奥林匹斯神谕 · LOCAL ONLY</b></footer>
+    <footer><span>© 2026 MOIRAI / TenetJustin</span><p>自我观照工具，不替代医疗、法律或财务专业意见。 · <a href="./terms.html">用户协议</a> · <a href="./copyright.html">版权与版本</a></p><b>奥林匹斯神谕 · LOCAL ONLY</b></footer>
   </main>;
 }
