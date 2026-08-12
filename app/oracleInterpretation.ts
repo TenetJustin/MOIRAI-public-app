@@ -187,6 +187,32 @@ function buildSynthesis(causalChain: string, commonTheme: string) {
   return `${causalChain} ${commonTheme}`;
 }
 
+function mythFigure(context: OracleCardContext) {
+  const data = databaseById.get(context.card.id);
+  if (!data) throw new Error(`塔罗数据库缺少牌：${context.card.id}`);
+  const direction = context.orientation === "upright" ? "带来可用的" : "提醒先处理失衡的";
+  return `${data.greek_character}以${direction}「${data.keywords[0]}」回应${context.position}`;
+}
+
+function withinCharacterLimit(text: string, limit = 400) {
+  if ([...text].length <= limit) return text;
+  const shortened = [...text].slice(0, limit - 1).join("");
+  const sentenceEnd = Math.max(shortened.lastIndexOf("。"), shortened.lastIndexOf("；"));
+  return `${sentenceEnd >= limit * 0.7 ? shortened.slice(0, sentenceEnd) : shortened}。`;
+}
+
+function buildGreekBridge(spread: SpreadKey, cards: OracleCardContext[]) {
+  if (spread === "single") {
+    const data = databaseById.get(cards[0].card.id)!;
+    const direction = cards[0].orientation === "upright" ? "可被主动运用" : "正因阻塞、缺失或过量而需要校正";
+    return withinCharacterLimit(`${data.greek_character}把这张牌的「${data.keywords.join("、")}」带入现实：这股力量目前${direction}。神话在这里不是额外故事，而是一面镜子，帮助你辨认正在发生的状态，并把选择落实到行动。`);
+  }
+  if (spread === "three") {
+    return withinCharacterLimit(`${mythFigure(cards[0])}，说明旧经验如何形成局面；${mythFigure(cards[1])}，揭示此刻最需要回应的力量；${mythFigure(cards[2])}，指出现有选择延续后的可能方向。三位神话形象共同呈现从过去影响、当前选择到条件性趋势的转变，而非三个互不相关的故事。`);
+  }
+  return withinCharacterLimit(`${mythFigure(cards[0])}，并受到${mythFigure(cards[1])}的牵制；${mythFigure(cards[2])}，其根源连接${mythFigure(cards[3])}。发展线由${mythFigure(cards[5])}推动；${mythFigure(cards[6])}与${mythFigure(cards[7])}揭示自我和环境怎样互相作用。${mythFigure(cards[8])}呈现愿望的两面，最终由${mythFigure(cards[9])}给出可调整的整体方向。这条神话线强调核心矛盾、来源、内外作用与结果条件，不把各人物拆成独立典故。`);
+}
+
 export function createLocalOracleReading(question: string, spread: SpreadKey, cards: OracleCardContext[]): LocalOracleReading {
   const category = classifyQuestion(question);
   if (cards.length < spreadRules[spread].count) {
@@ -226,6 +252,7 @@ export function createLocalOracleReading(question: string, spread: SpreadKey, ca
   const commonTheme = buildCommonTheme(cards, combinations);
   const priorities = buildPriorities(spread, cards);
   const actions = buildActions(spread, category, cards);
+  const greekBridge = buildGreekBridge(spread, cards);
   return {
     category,
     theme: categoryRules[category].label,
@@ -238,7 +265,7 @@ export function createLocalOracleReading(question: string, spread: SpreadKey, ca
     commonTheme,
     priorities,
     actions,
-    greekBridge: threads.map((thread) => `${thread.position}：${thread.myth}`).join(" "),
+    greekBridge,
     advice: actions.join(" "),
   };
 }

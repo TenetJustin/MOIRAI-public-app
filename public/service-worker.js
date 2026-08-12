@@ -1,4 +1,4 @@
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.2.2";
 const SHELL_CACHE = `moirai-shell-${APP_VERSION}`;
 const MEDIA_CACHE = `moirai-media-${APP_VERSION}`;
 
